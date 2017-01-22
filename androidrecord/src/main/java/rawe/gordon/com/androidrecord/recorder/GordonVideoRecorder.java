@@ -9,7 +9,6 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.bytedeco.javacpp.avcodec;
 import org.bytedeco.javacv.FFmpegFrameFilter;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
@@ -113,6 +112,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         strFinalPath = FileUtil.createFilePath(mFolder, null, Long.toString(System.currentTimeMillis()));
         // 初始化时设置录像机的目标视频大小
         recorder = new FFmpegFrameRecorder(strFinalPath, outputWidth, outputHeight, 1);
+        recorder.setFormat(Build.VERSION.SDK_INT > 10 ? "flv" : "3gp");
         recorder.setSampleRate(SAMPLE_AUDIO_RATE_IN_HZ);
         // Set in the surface changed method
         recorder.setFrameRate(FRAME_RATE);

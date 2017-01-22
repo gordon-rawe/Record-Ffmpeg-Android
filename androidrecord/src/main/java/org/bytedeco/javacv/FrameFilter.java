@@ -21,6 +21,9 @@
  */
 package org.bytedeco.javacv;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * A frame processor that may filter video and audio frames, or both.
  * After calling {@link #start()}, we can add frames to the graph with
@@ -28,7 +31,7 @@ package org.bytedeco.javacv;
  *
  * @author Samuel Audet
  */
-public abstract class FrameFilter {
+public abstract class FrameFilter implements Closeable {
     public static FrameFilter createDefault(String filtersDescr, int imageWidth, int imageHeight) throws Exception {
         return new FFmpegFrameFilter(filtersDescr, imageWidth, imageHeight);
     }
@@ -43,6 +46,7 @@ public abstract class FrameFilter {
     public String getFilters() {
         return filters;
     }
+
     public void setFilters(String filters) {
         this.filters = filters;
     }
@@ -50,6 +54,7 @@ public abstract class FrameFilter {
     public int getImageWidth() {
         return imageWidth;
     }
+
     public void setImageWidth(int imageWidth) {
         this.imageWidth = imageWidth;
     }
@@ -57,6 +62,7 @@ public abstract class FrameFilter {
     public int getImageHeight() {
         return imageHeight;
     }
+
     public void setImageHeight(int imageHeight) {
         this.imageHeight = imageHeight;
     }
@@ -64,6 +70,7 @@ public abstract class FrameFilter {
     public int getPixelFormat() {
         return pixelFormat;
     }
+
     public void setPixelFormat(int pixelFormat) {
         this.pixelFormat = pixelFormat;
     }
@@ -71,6 +78,7 @@ public abstract class FrameFilter {
     public double getFrameRate() {
         return frameRate;
     }
+
     public void setFrameRate(double frameRate) {
         this.frameRate = frameRate;
     }
@@ -78,26 +86,43 @@ public abstract class FrameFilter {
     public double getAspectRatio() {
         return aspectRatio;
     }
+
     public void setAspectRatio(double aspectRatio) {
         this.aspectRatio = aspectRatio;
     }
 
-    public static class Exception extends java.lang.Exception {
-        public Exception(String message) { super(message); }
-        public Exception(String message, Throwable cause) { super(message, cause); }
+    public static class Exception extends IOException {
+        public Exception(String message) {
+            super(message);
+        }
+
+        public Exception(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 
     public abstract void start() throws Exception;
+
     public abstract void stop() throws Exception;
+
     public abstract void push(Frame frame) throws Exception;
+
     public abstract Frame pull() throws Exception;
+
     public abstract void release() throws Exception;
+
+    @Override
+    public void close() throws Exception {
+        stop();
+        release();
+    }
 
     public void restart() throws Exception {
         stop();
         start();
     }
+
     public void flush() throws Exception {
-        while (pull() != null);
+        while (pull() != null) ;
     }
 }

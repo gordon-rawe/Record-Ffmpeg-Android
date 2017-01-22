@@ -47,8 +47,6 @@
 
 package org.bytedeco.javacv;
 
-import android.os.Build;
-
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
@@ -109,6 +107,7 @@ import static org.bytedeco.javacpp.avutil.av_strdup;
 public class FFmpegFrameFilter extends FrameFilter {
 
     private static Exception loadingException = null;
+
     public static void tryLoad() throws Exception {
         if (loadingException != null) {
             throw loadingException;
@@ -126,7 +125,7 @@ public class FFmpegFrameFilter extends FrameFilter {
                 avfilter_register_all();
             } catch (Throwable t) {
                 if (t instanceof Exception) {
-                    throw loadingException = (Exception)t;
+                    throw loadingException = (Exception) t;
                 } else {
                     throw loadingException = new Exception("Failed to load " + FFmpegFrameRecorder.class, t);
                 }
@@ -137,7 +136,8 @@ public class FFmpegFrameFilter extends FrameFilter {
     static {
         try {
             tryLoad();
-        } catch (Exception ex) { }
+        } catch (Exception ex) {
+        }
     }
 
     public FFmpegFrameFilter(String filters, int imageWidth, int imageHeight) {
@@ -148,11 +148,13 @@ public class FFmpegFrameFilter extends FrameFilter {
         this.frameRate = 30;
         this.aspectRatio = 0;
     }
+
     public void release() throws Exception {
         synchronized (org.bytedeco.javacpp.avfilter.class) {
             releaseUnsafe();
         }
     }
+
     void releaseUnsafe() throws Exception {
         if (filter_graph != null) {
             avfilter_graph_free(filter_graph);
@@ -170,7 +172,9 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
         frame = null;
     }
-    @Override protected void finalize() throws Throwable {
+
+    @Override
+    protected void finalize() throws Throwable {
         super.finalize();
         release();
     }
@@ -192,11 +196,12 @@ public class FFmpegFrameFilter extends FrameFilter {
             startUnsafe();
         }
     }
+
     void startUnsafe() throws Exception {
         image_frame = av_frame_alloc();
         filt_frame = av_frame_alloc();
-        image_ptr = new BytePointer[] { null };
-        image_buf = new Buffer[] { null };
+        image_ptr = new BytePointer[]{null};
+        image_buf = new Buffer[]{null};
         frame = new Frame();
 
         if (image_frame == null || filt_frame == null) {
@@ -204,12 +209,12 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
 
         int ret;
-        AVFilter buffersrc  = avfilter_get_by_name("buffer");
+        AVFilter buffersrc = avfilter_get_by_name("buffer");
         AVFilter buffersink = avfilter_get_by_name("buffersink");
         AVFilterInOut outputs = avfilter_inout_alloc();
-        AVFilterInOut inputs  = avfilter_inout_alloc();
+        AVFilterInOut inputs = avfilter_inout_alloc();
         AVRational time_base = av_inv_q(av_d2q(frameRate, 1001000));
-        int pix_fmts[] = { pixelFormat, AV_PIX_FMT_NONE };
+        int pix_fmts[] = {pixelFormat, AV_PIX_FMT_NONE};
 
         try {
             filter_graph = avfilter_graph_alloc();
@@ -223,14 +228,14 @@ public class FFmpegFrameFilter extends FrameFilter {
                     "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
                     imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den());
             ret = avfilter_graph_create_filter(buffersrc_ctx = new AVFilterContext(), buffersrc, "in",
-                                               args, null, filter_graph);
+                    args, null, filter_graph);
             if (ret < 0) {
                 throw new Exception("avfilter_graph_create_filter(): Cannot create buffer source.");
             }
 
             /* buffer video sink: to terminate the filter chain. */
             ret = avfilter_graph_create_filter(buffersink_ctx = new AVFilterContext(), buffersink, "out",
-                                               null, null, filter_graph);
+                    null, null, filter_graph);
             if (ret < 0) {
                 throw new Exception("avfilter_graph_create_filter(): Cannot create buffer sink.");
             }
@@ -266,7 +271,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             inputs.pad_idx(0);
             inputs.next(null);
             if ((ret = avfilter_graph_parse_ptr(filter_graph, filters,
-                                                inputs, outputs, null)) < 0) {
+                    inputs, outputs, null)) < 0) {
                 throw new Exception("avfilter_graph_parse_ptr()");
             }
             if ((ret = avfilter_graph_config(filter_graph, null)) < 0) {
@@ -285,20 +290,23 @@ public class FFmpegFrameFilter extends FrameFilter {
     public void push(Frame frame) throws Exception {
         push(frame, AV_PIX_FMT_NONE);
     }
+
     public void push(Frame frame, int pixelFormat) throws Exception {
-        if (frame.image != null) {
+        if (frame != null && frame.image != null) {
             pushImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
                     frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
-        }
-        if (frame.samples != null) {
+        } else if (frame != null && frame.samples != null) {
 //            pushSamples(frame.sampleRate, frame.audioChannels, frame.samples);
+        } else {
+            // indicate EOF as required, for example, by the "palettegen" filter
+            av_buffersrc_add_frame_flags(buffersrc_ctx, null, 0);
         }
     }
 
-    public void pushImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
+    public void pushImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer... image) throws Exception {
         int step = stride * Math.abs(depth) / 8;
         BytePointer data = image[0] instanceof ByteBuffer
-                ? new BytePointer((ByteBuffer)image[0].position(0))
+                ? new BytePointer((ByteBuffer) image[0].position(0))
                 : new BytePointer(new Pointer(image[0].position(0)));
 
         if (pixelFormat == AV_PIX_FMT_NONE) {
@@ -342,7 +350,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             throw new Exception("av_buffersink_get_frame(): Error occurred: "
                     + av_make_error_string(new BytePointer(256), 256, ret).getString());
         }
-        frame.imageWidth  = filt_frame.width();
+        frame.imageWidth = filt_frame.width();
         frame.imageHeight = filt_frame.height();
         frame.imageDepth = Frame.DEPTH_UBYTE;
         if (filt_frame.data(1) == null) {
@@ -359,26 +367,14 @@ public class FFmpegFrameFilter extends FrameFilter {
             frame.imageStride = frame.imageWidth;
             int size = avpicture_get_size(filt_frame.format(), frame.imageWidth, frame.imageHeight);
             // Fix bug on Android4.0，check out https://github.com/bytedeco/javacpp/issues/39
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                if (image_ptr[0] == null || image_ptr[0].capacity() < size) {
-                    image_ptr[0] = new BytePointer(size);
-                    image_buf[0] = image_ptr[0].asBuffer();
-                }
-                frame.image = image_buf;
-                frame.image[0].position(0).limit(size);
-                frame.imageChannels = 2;
-                ret = avpicture_layout(new AVPicture(filt_frame), filt_frame.format(),
-                        frame.imageWidth, frame.imageHeight, image_ptr[0].position(0), image_ptr[0].capacity());
-            } else {
-                if (image_buf[0] == null || image_buf[0].capacity() < size) {
-                    image_buf[0] = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
-                }
-                frame.image = image_buf;
-                frame.image[0].position(0).limit(size);
-                frame.imageChannels = 2;
-                ret = avpicture_layout(new AVPicture(filt_frame), filt_frame.format(),
-                        frame.imageWidth, frame.imageHeight, (ByteBuffer) frame.image[0].position(0), frame.image[0].capacity());
+            if (image_buf[0] == null || image_buf[0].capacity() < size) {
+                image_buf[0] = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
             }
+            frame.image = image_buf;
+            frame.image[0].position(0).limit(size);
+            frame.imageChannels = (size + frame.imageWidth * frame.imageHeight - 1) / (frame.imageWidth * frame.imageHeight);
+            ret = avpicture_layout(new AVPicture(filt_frame), filt_frame.format(),
+                    frame.imageWidth, frame.imageHeight, (ByteBuffer) frame.image[0].position(0), frame.image[0].capacity());
         }
         return frame;
     }
