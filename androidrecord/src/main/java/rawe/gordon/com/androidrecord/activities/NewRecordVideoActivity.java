@@ -11,7 +11,6 @@ import rawe.gordon.com.androidrecord.PressRecordView;
 import rawe.gordon.com.androidrecord.R;
 import rawe.gordon.com.androidrecord.camera.CameraHelper;
 import rawe.gordon.com.androidrecord.recorder.GordonVideoRecorder;
-import rawe.gordon.com.androidrecord.utils.DensityUtils;
 import rawe.gordon.com.androidrecord.utils.FileUtil;
 import rawe.gordon.com.androidrecord.widget.CameraPreviewView;
 

@@ -30,7 +30,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
 
     private static final String TAG = GordonVideoRecorder.class.getCanonicalName();
     // 帧率
-    private static final int FRAME_RATE = 30;
+    private static final int FRAME_RATE = 28;
     // 声音采样率
     private static final int SAMPLE_AUDIO_RATE_IN_HZ = 44100;
     // 输出文件目录
@@ -116,6 +116,10 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         recorder.setFormat(Build.VERSION.SDK_INT > 10 ? "flv" : "3gp");
         recorder.setVideoCodec(AV_CODEC_ID_H264);
         recorder.setSampleRate(SAMPLE_AUDIO_RATE_IN_HZ);
+        recorder.setVideoOption("preset", "faster");
+        recorder.setVideoOption("crf", "14");
+        recorder.setVideoOption("tune", "zerolatency");
+        recorder.setVideoBitrate(2000000);
         // Set in the surface changed method
         recorder.setFrameRate(FRAME_RATE);
         Log.i(TAG, "recorder initialize success");
@@ -269,12 +273,12 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      * @throws FrameRecorder.Exception
      */
     private void recordFrame(Frame frame) throws FrameRecorder.Exception, FrameFilter.Exception {
-//        mFrameFilter.push(frame);
-//        Frame filteredFrame;
-//        while ((filteredFrame = mFrameFilter.pull()) != null) {
-//            recorder.record(filteredFrame);
-//        }
-        recorder.record(frame);
+        mFrameFilter.push(frame);
+        Frame filteredFrame;
+        while ((filteredFrame = mFrameFilter.pull()) != null) {
+            recorder.record(filteredFrame);
+        }
+//        recorder.record(frame);
     }
 
     /**

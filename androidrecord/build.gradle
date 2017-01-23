@@ -28,3 +28,7 @@ dependencies {
     compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.0.0-1.1',classifier: 'android-arm'
     compile group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '2.8.1-1.1',classifier: 'android-arm'
 }
+
+configurations{
+    all*.exclude group: 'org.bytedeco', module: 'javacpp-presets'
+}

@@ -23,6 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name="rawe.gordon.com.androidrecord.activities.NewRecordVideoActivity" />
+        <activity android:name="rawe.gordon.com.androidrecord.RecordActivity" />
     </application>
 
 </manifest>
