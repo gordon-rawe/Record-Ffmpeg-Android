@@ -3,12 +3,9 @@ package rawe.gordon.com.androidrecord.activities;
 import android.app.Activity;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.util.Pair;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import java.util.List;
 
 import rawe.gordon.com.androidrecord.PressRecordView;
 import rawe.gordon.com.androidrecord.R;
@@ -96,29 +93,9 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
 
     private void initCamera() {
         mRecorder = new GordonVideoRecorder(FileUtil.MEDIA_FILE_DIR);
-        Pair<Integer, Integer> size = getSuggestedSize();
-        mRecorder.setOutputSize(size.first, size.second);
         CameraPreviewView preview = (CameraPreviewView) findViewById(R.id.camera_preview);
         preview.setCamera(camera, cameraId);
         mRecorder.setCameraPreviewView(preview);
-    }
-
-    private Pair<Integer, Integer> getSuggestedSize() {
-        int suggestedWidth = DensityUtils.getScreenWidth();
-        List<Camera.Size> sizes = camera.getParameters().getSupportedPictureSizes();
-        Pair<Integer, Integer> best = null;
-        for (Camera.Size size : sizes) {
-            if (size.width <= suggestedWidth) {
-                if (best == null)
-                    best = new Pair<>(size.width, size.height);
-                else if (best.first < size.width)
-                    best = new Pair<>(size.width, size.height);
-            }
-        }
-        if (best == null)
-            return new Pair<>(suggestedWidth, suggestedWidth * 3 / 4);
-        else
-            return best;
     }
 
     private void switchCamera() {

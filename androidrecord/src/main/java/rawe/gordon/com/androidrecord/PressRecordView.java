@@ -25,6 +25,7 @@ public class PressRecordView extends ViewGroup {
     private float downY = 0;
     private ImageView centerButton;
     private TextView textView, cancelHint;
+
     private int screenWidth;
     private float progressLength = screenWidth;
     private int selfHeight = 0;

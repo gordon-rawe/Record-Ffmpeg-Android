@@ -21,6 +21,8 @@ import java.nio.ShortBuffer;
 import rawe.gordon.com.androidrecord.utils.FileUtil;
 import rawe.gordon.com.androidrecord.widget.CameraPreviewView;
 
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H264;
+
 /**
  * 仿微信录像机
  */
@@ -46,7 +48,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
     private AudioRecord audioRecord;
     private AudioRecordRunnable audioRecordRunnable;
     private Thread audioThread;
-    volatile boolean runAudioThread = true;
+    private volatile boolean runAudioThread = true;
 
     private volatile FFmpegFrameRecorder recorder;
 
@@ -96,7 +98,6 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      * @param height
      */
     public void setOutputSize(int width, int height) {
-        setFrameSize(width, height);
         outputWidth = width;
         outputHeight = height;
     }
@@ -113,6 +114,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         // 初始化时设置录像机的目标视频大小
         recorder = new FFmpegFrameRecorder(strFinalPath, outputWidth, outputHeight, 1);
         recorder.setFormat(Build.VERSION.SDK_INT > 10 ? "flv" : "3gp");
+        recorder.setVideoCodec(AV_CODEC_ID_H264);
         recorder.setSampleRate(SAMPLE_AUDIO_RATE_IN_HZ);
         // Set in the surface changed method
         recorder.setFrameRate(FRAME_RATE);
@@ -152,6 +154,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         if (TextUtils.isEmpty(mFilters)) {
             mFilters = generateFilters((int) (1f * outputHeight / outputWidth * imageHeight), imageHeight, 0, 0, "clock");
         }
+
         mFrameFilter = new FFmpegFrameFilter(mFilters, imageWidth, imageHeight);
         mFrameFilter.setPixelFormat(org.bytedeco.javacpp.avutil.AV_PIX_FMT_NV21); // default camera format on Android
     }
@@ -243,7 +246,6 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
             /* get video data */
             if (yuvImage != null && recording) {
                 ((ByteBuffer) yuvImage.image[0].position(0)).put(data);
-
                 try {
                     Log.v(TAG, "Writing Frame");
                     long pastTime = System.currentTimeMillis() - startTime;
@@ -267,11 +269,12 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      * @throws FrameRecorder.Exception
      */
     private void recordFrame(Frame frame) throws FrameRecorder.Exception, FrameFilter.Exception {
-        mFrameFilter.push(frame);
-        Frame filteredFrame;
-        while ((filteredFrame = mFrameFilter.pull()) != null) {
-            recorder.record(filteredFrame);
-        }
+//        mFrameFilter.push(frame);
+//        Frame filteredFrame;
+//        while ((filteredFrame = mFrameFilter.pull()) != null) {
+//            recorder.record(filteredFrame);
+//        }
+        recorder.record(frame);
     }
 
     /**
@@ -282,7 +285,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
     public void setCameraPreviewView(CameraPreviewView cameraPreviewView) {
         mCameraPreviewView = cameraPreviewView;
         mCameraPreviewView.addPreviewEventListener(this);
-        mCameraPreviewView.setViewWHRatio(1f * outputWidth / outputHeight);
+
     }
 
     @Override
@@ -291,8 +294,11 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = parameters.getPreviewSize();
         // 设置Recorder处理的的图像帧大小
+//        setFrameSize(size.width, size.height);
         setFrameSize(size.width, size.height);
-
+        setOutputSize(size.width / 2, size.height / 2);
+        mCameraPreviewView.setViewWHRatio(1F * size.width / size.height);
+        mCameraPreviewView.requestLayout();
         camera.setPreviewCallbackWithBuffer(this);
         camera.addCallbackBuffer(new byte[size.width * size.height * ImageFormat.getBitsPerPixel(parameters.getPreviewFormat()) / 8]);
     }
