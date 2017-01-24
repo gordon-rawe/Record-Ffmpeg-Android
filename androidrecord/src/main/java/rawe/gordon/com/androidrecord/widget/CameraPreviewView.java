@@ -395,17 +395,6 @@ public class CameraPreviewView extends FrameLayout {
                 // ignore: tried to stop a non-existent preview
             }
 
-            // set preview size and make any resize, rotate or
-            // reformatting changes here
-            Camera.Parameters parameters = mCamera.getParameters();
-
-            Camera.Size size = CameraHelper.getOptimalPreviewSize(parameters.getSupportedPreviewSizes(), Math.min(w, h));
-            Log.d(TAG, "OptimalPreviewSize w: " + size.width + "---h: " + size.height);
-            parameters.setPreviewSize(size.width, size.height);
-            mCamera.setParameters(parameters);
-            // 预览尺寸改变，请求重新布局、计算宽高
-            requestLayout();
-
             for (PreviewEventListener previewEventListener : mPreviewEventListenerList)
                 previewEventListener.onPrePreviewStart();
 

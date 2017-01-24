@@ -18,6 +18,8 @@ import org.bytedeco.javacv.FrameRecorder;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
+import rawe.gordon.com.androidrecord.camera.CameraHelper;
+import rawe.gordon.com.androidrecord.utils.DensityUtils;
 import rawe.gordon.com.androidrecord.utils.FileUtil;
 import rawe.gordon.com.androidrecord.widget.CameraPreviewView;
 
@@ -140,7 +142,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      */
     private void initFrameFilter() {
         if (TextUtils.isEmpty(mFilters)) {
-            mFilters = Constants.generateFilters((int) (1f * outputHeight / outputWidth * imageHeight), imageHeight, 0, 0, "clock");
+            mFilters = Constants.generateFilters(imageWidth, imageHeight, 0, 0, "clock");
         }
 
         mFrameFilter = new FFmpegFrameFilter(mFilters, imageWidth, imageHeight);
@@ -265,6 +267,23 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
 //        recorder.record(frame);
     }
 
+
+    public void optimizeCameraSize() {
+        // set preview size and make any resize, rotate or
+        // reformatting changes here
+        Camera.Parameters parameters = mCameraPreviewView.getCamera().getParameters();
+
+        Camera.Size size = CameraHelper.getOptimalPreviewSize(parameters.getSupportedPreviewSizes(), (int) Math.min(DensityUtils.getScreenWidth(), DensityUtils.getScreenWidth() / Constants.TARGET_RATIO));
+        Log.d(TAG, "OptimalPreviewSize w: " + size.width + "---h: " + size.height);
+        parameters.setPreviewSize(size.width, size.height);
+        mCameraPreviewView.getCamera().setParameters(parameters);
+        setFrameSize(size.width, size.height);
+        setOutputSize(size.width / Constants.SCALE_RATIO, size.height / Constants.SCALE_RATIO);
+        mCameraPreviewView.setViewWHRatio(1F * size.width / size.height);
+        // 预览尺寸改变，请求重新布局、计算宽高
+        mCameraPreviewView.requestLayout();
+    }
+
     /**
      * 设置相机预览视图
      *
@@ -273,6 +292,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
     public void setCameraPreviewView(CameraPreviewView cameraPreviewView) {
         mCameraPreviewView = cameraPreviewView;
         mCameraPreviewView.addPreviewEventListener(this);
+        optimizeCameraSize();
     }
 
     @Override
@@ -280,10 +300,12 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         Camera camera = mCameraPreviewView.getCamera();
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = parameters.getPreviewSize();
-        setFrameSize(size.width, size.height);
-        setOutputSize(size.width / Constants.SCALE_RATIO, size.height / Constants.SCALE_RATIO);
-        mCameraPreviewView.setViewWHRatio(1F * size.width / size.height);
-        mCameraPreviewView.requestLayout();
+//
+//        setFrameSize(size.width, size.height);
+//        setOutputSize(size.width / Constants.SCALE_RATIO, size.height / Constants.SCALE_RATIO);
+//        mCameraPreviewView.setViewWHRatio(1F * size.width / size.height);
+//        mCameraPreviewView.requestLayout();
+
         camera.setPreviewCallbackWithBuffer(this);
         camera.addCallbackBuffer(new byte[size.width * size.height * ImageFormat.getBitsPerPixel(parameters.getPreviewFormat()) / 8]);
     }

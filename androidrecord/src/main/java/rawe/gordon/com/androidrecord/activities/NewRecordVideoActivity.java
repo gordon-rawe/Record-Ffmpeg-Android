@@ -10,6 +10,7 @@ import android.widget.Toast;
 import rawe.gordon.com.androidrecord.PressRecordView;
 import rawe.gordon.com.androidrecord.R;
 import rawe.gordon.com.androidrecord.camera.CameraHelper;
+import rawe.gordon.com.androidrecord.recorder.Constants;
 import rawe.gordon.com.androidrecord.recorder.GordonVideoRecorder;
 import rawe.gordon.com.androidrecord.utils.FileUtil;
 import rawe.gordon.com.androidrecord.widget.CameraPreviewView;
@@ -91,7 +92,7 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
     }
 
     private void initCamera() {
-        mRecorder = new GordonVideoRecorder(FileUtil.MEDIA_FILE_DIR);
+        mRecorder = new GordonVideoRecorder(Constants.MEDIA_FILE_DIR);
         CameraPreviewView preview = (CameraPreviewView) findViewById(R.id.camera_preview);
         preview.setCamera(camera, cameraId);
         mRecorder.setCameraPreviewView(preview);
