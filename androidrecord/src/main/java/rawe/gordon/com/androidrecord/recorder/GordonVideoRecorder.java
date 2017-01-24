@@ -21,31 +21,25 @@ import java.nio.ShortBuffer;
 import rawe.gordon.com.androidrecord.utils.FileUtil;
 import rawe.gordon.com.androidrecord.widget.CameraPreviewView;
 
-import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H264;
-
 /**
- * 仿微信录像机
+ * Wechat look like video recorder
  */
 public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPreviewView.PreviewEventListener {
 
     private static final String TAG = GordonVideoRecorder.class.getCanonicalName();
-    // 帧率
-    private static final int FRAME_RATE = 28;
-    // 声音采样率
-    private static final int SAMPLE_AUDIO_RATE_IN_HZ = 44100;
-    // 输出文件目录
-    private final String mFolder;
-    // 输出文件路径
-    private String strFinalPath;
-    // 图片帧宽、高
-    private int imageWidth;//= 1280;
-    private int imageHeight;// = 720;
-    // 输出视频宽、高
-    private int outputWidth;//= 1280;
-    private int outputHeight;//= 720;
 
-    /* audio data getting thread */
-    private AudioRecord audioRecord;
+    // specify the output folder
+    private final String mFolder;
+    // specify the output path
+    private String strFinalPath;
+    // specify the picture width and height
+    private int imageWidth;
+    private int imageHeight;
+
+    // specify the output width and height
+    private int outputWidth;
+    private int outputHeight;
+
     private AudioRecordRunnable audioRecordRunnable;
     private Thread audioThread;
     private volatile boolean runAudioThread = true;
@@ -59,12 +53,12 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
 
     private boolean recording;
 
-    /* The number of seconds in the continuous com.ctrip.gs.video.record.record loop (or 0 to disable loop). */
+    /* The number of seconds in the continuous loop (or 0 to disable loop). */
     private Frame yuvImage = null;
 
-    // 图片帧过滤器
+    // filter in this project is to transpose clock
     private FFmpegFrameFilter mFrameFilter;
-    // 相机预览视图
+    // preview window
     private CameraPreviewView mCameraPreviewView;
 
     /**
@@ -86,7 +80,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      * @param width
      * @param height
      */
-    public void setFrameSize(int width, int height) {
+    private void setFrameSize(int width, int height) {
         imageWidth = width;
         imageHeight = height;
     }
@@ -97,9 +91,9 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      * @param width
      * @param height
      */
-    public void setOutputSize(int width, int height) {
-        outputWidth = width;
-        outputHeight = height;
+    private void setOutputSize(float width, float height) {
+        outputWidth = (int) width;
+        outputHeight = (int) height;
     }
 
     /**
@@ -107,21 +101,25 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      */
     private void initRecorder() {
         Log.w(TAG, "init recorder");
-
-        yuvImage = new Frame(imageWidth, imageHeight, Frame.DEPTH_UBYTE, 2);
         Log.i(TAG, "create yuvImage");
+        yuvImage = new Frame(imageWidth, imageHeight, Frame.DEPTH_UBYTE, 2);
         strFinalPath = FileUtil.createFilePath(mFolder, null, Long.toString(System.currentTimeMillis()));
         // 初始化时设置录像机的目标视频大小
         recorder = new FFmpegFrameRecorder(strFinalPath, outputWidth, outputHeight, 1);
-        recorder.setFormat(Build.VERSION.SDK_INT > 10 ? "flv" : "3gp");
-        recorder.setVideoCodec(AV_CODEC_ID_H264);
-        recorder.setSampleRate(SAMPLE_AUDIO_RATE_IN_HZ);
-        recorder.setVideoOption("preset", "faster");
-        recorder.setVideoOption("crf", "14");
-        recorder.setVideoOption("tune", "zerolatency");
-        recorder.setVideoBitrate(2000000);
-        // Set in the surface changed method
-        recorder.setFrameRate(FRAME_RATE);
+        if (Build.VERSION.SDK_INT > 10) {
+            recorder.setFormat(Constants.OUTPUT_FORMAT);
+            recorder.setVideoCodec(Constants.VIDEO_CODEC);
+        } else {
+            recorder.setFormat(Constants.OUTPUT_FORMAT_OLD);
+        }
+        recorder.setSampleRate(Constants.SAMPLE_AUDIO_RATE_IN_HZ);
+        recorder.setVideoBitrate(Constants.VIDEO_BIT_RATE);
+        recorder.setFrameRate(Constants.FRAME_RATE);
+
+        recorder.setVideoOption(Constants.KEY_PRESET, Constants.PRESET);
+        recorder.setVideoOption(Constants.KEY_CRF, Constants.CRF);
+        recorder.setVideoOption(Constants.KEY_TUNE, Constants.TUNE);
+
         Log.i(TAG, "recorder initialize success");
         audioRecordRunnable = new AudioRecordRunnable();
         audioThread = new Thread(audioRecordRunnable);
@@ -138,25 +136,11 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
     }
 
     /**
-     * 生成处理配置
-     *
-     * @param w         裁切宽度
-     * @param h         裁切高度
-     * @param x         裁切起始x坐标
-     * @param y         裁切起始y坐标
-     * @param transpose 图像旋转参数
-     * @return 帧图像数据处理参数
-     */
-    public static String generateFilters(int w, int h, int x, int y, String transpose) {
-        return String.format("crop=w=%d:h=%d:x=%d:y=%d,transpose=%s", w, h, x, y, transpose);
-    }
-
-    /**
      * 初始化帧过滤器
      */
     private void initFrameFilter() {
         if (TextUtils.isEmpty(mFilters)) {
-            mFilters = generateFilters((int) (1f * outputHeight / outputWidth * imageHeight), imageHeight, 0, 0, "clock");
+            mFilters = Constants.generateFilters((int) (1f * outputHeight / outputWidth * imageHeight), imageHeight, 0, 0, "clock");
         }
 
         mFrameFilter = new FFmpegFrameFilter(mFilters, imageWidth, imageHeight);
@@ -289,7 +273,6 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
     public void setCameraPreviewView(CameraPreviewView cameraPreviewView) {
         mCameraPreviewView = cameraPreviewView;
         mCameraPreviewView.addPreviewEventListener(this);
-
     }
 
     @Override
@@ -297,10 +280,8 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         Camera camera = mCameraPreviewView.getCamera();
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = parameters.getPreviewSize();
-        // 设置Recorder处理的的图像帧大小
-//        setFrameSize(size.width, size.height);
         setFrameSize(size.width, size.height);
-        setOutputSize(size.width / 2, size.height / 2);
+        setOutputSize(size.width / Constants.SCALE_RATIO, size.height / Constants.SCALE_RATIO);
         mCameraPreviewView.setViewWHRatio(1F * size.width / size.height);
         mCameraPreviewView.requestLayout();
         camera.setPreviewCallbackWithBuffer(this);
@@ -322,7 +303,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
     //---------------------------------------------
     // audio thread, gets and encodes audio data
     //---------------------------------------------
-    class AudioRecordRunnable implements Runnable {
+    private class AudioRecordRunnable implements Runnable {
 
         @Override
         public void run() {
@@ -333,9 +314,9 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
             ShortBuffer audioData;
             int bufferReadResult;
 
-            bufferSize = AudioRecord.getMinBufferSize(SAMPLE_AUDIO_RATE_IN_HZ,
+            bufferSize = AudioRecord.getMinBufferSize(Constants.SAMPLE_AUDIO_RATE_IN_HZ,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-            audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_AUDIO_RATE_IN_HZ,
+            AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, Constants.SAMPLE_AUDIO_RATE_IN_HZ,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
             audioData = ShortBuffer.allocate(bufferSize);
             Log.d(TAG, "audioRecord.startRecording()");
@@ -362,12 +343,9 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
             Log.v(TAG, "AudioThread Finished, release audioRecord");
 
             /* encoding finish, release recorder */
-            if (audioRecord != null) {
-                audioRecord.stop();
-                audioRecord.release();
-                audioRecord = null;
-                Log.v(TAG, "audioRecord released");
-            }
+            audioRecord.stop();
+            audioRecord.release();
+            Log.v(TAG, "audioRecord released");
         }
     }
 }

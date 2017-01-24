@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import rawe.gordon.com.androidrecord.recorder.Constants;
+
 /**
  * Created by gordon on 23/01/2017.
  */
@@ -42,7 +44,7 @@ public class RecordActivity extends Activity implements View.OnClickListener {
     private final static String CLASS_LABEL = "RecordActivity";
     private final static String LOG_TAG = CLASS_LABEL;
 
-    private String ffmpeg_link = "/mnt/sdcard/stream.flv";
+    private String ffmpeg_link = "/mnt/sdcard/stream"+ Constants.OUTPUT_VIDEO_EXTENSION;
 
     long startTime = 0;
     boolean recording = false;

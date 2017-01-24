@@ -15,7 +15,6 @@ import rawe.gordon.com.androidrecord.recorder.Constants;
  */
 public class FileUtil {
 
-    public static final String MEDIA_FILE_DIR = "/Media";
 
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
@@ -48,7 +47,7 @@ public class FileUtil {
 
 //        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
 //                Environment.DIRECTORY_PICTURES), "MyCameraApp");
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory() + MEDIA_FILE_DIR);
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory() + Constants.MEDIA_FILE_DIR);
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
@@ -65,10 +64,10 @@ public class FileUtil {
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_" + timeStamp + ".jpg");
+                    Constants.IMAGE_FILE_PREFIX + timeStamp + Constants.OUTPUT_IMAGE_EXTENSION);
         } else if (type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_" + timeStamp + ".mp4");
+                    Constants.VIDEO_FILE_PREFIX + timeStamp + Constants.OUTPUT_VIDEO_EXTENSION);
         } else {
             return null;
         }
@@ -95,7 +94,7 @@ public class FileUtil {
             dir = new File(dir, subfolder);
         }
         dir.mkdirs();
-        String fileName = Constants.FILE_START_NAME + uniqueId + Constants.VIDEO_EXTENSION;
+        String fileName = Constants.VIDEO_FILE_PREFIX + uniqueId + Constants.OUTPUT_VIDEO_EXTENSION;
         return new File(dir, fileName).getAbsolutePath();
     }
 
