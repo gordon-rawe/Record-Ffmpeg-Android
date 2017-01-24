@@ -5,6 +5,7 @@ import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H264;
 public class Constants {
 
     public static final float TARGET_RATIO = 4 / 3F;
+    public static float REAL_OUTPUT_RATIO = 4 / 3F;
 
     public static final String MEDIA_FILE_DIR = "/Media";
     public final static String VIDEO_FILE_PREFIX = "VID_";

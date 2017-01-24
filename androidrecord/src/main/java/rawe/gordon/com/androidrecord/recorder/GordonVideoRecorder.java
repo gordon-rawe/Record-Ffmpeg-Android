@@ -142,7 +142,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      */
     private void initFrameFilter() {
         if (TextUtils.isEmpty(mFilters)) {
-            mFilters = Constants.generateFilters(imageWidth, imageHeight, 0, 0, "clock");
+            mFilters = Constants.generateFilters((int) (imageHeight / Constants.REAL_OUTPUT_RATIO), imageHeight, 0, 0, "clock");
         }
 
         mFrameFilter = new FFmpegFrameFilter(mFilters, imageWidth, imageHeight);
@@ -275,6 +275,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
 
         Camera.Size size = CameraHelper.getOptimalPreviewSize(parameters.getSupportedPreviewSizes(), (int) Math.min(DensityUtils.getScreenWidth(), DensityUtils.getScreenWidth() / Constants.TARGET_RATIO));
         Log.d(TAG, "OptimalPreviewSize w: " + size.width + "---h: " + size.height);
+        Constants.REAL_OUTPUT_RATIO = 1F * size.width / size.height;
         parameters.setPreviewSize(size.width, size.height);
         mCameraPreviewView.getCamera().setParameters(parameters);
         setFrameSize(size.width, size.height);
