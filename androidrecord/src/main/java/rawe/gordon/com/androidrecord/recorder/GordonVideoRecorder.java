@@ -272,8 +272,12 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         // set preview size and make any resize, rotate or
         // reformatting changes here
         Camera.Parameters parameters = mCameraPreviewView.getCamera().getParameters();
-
-        Camera.Size size = CameraHelper.getOptimalPreviewSize(parameters.getSupportedPreviewSizes(), (int) Math.min(DensityUtils.getScreenWidth(), DensityUtils.getScreenWidth() / Constants.TARGET_RATIO));
+        Camera.Size size = null;
+        if (Constants.USE_RECTANGLE) {
+            size = CameraHelper.getRectanglePreviewSize(parameters.getSupportedPreviewSizes());
+        }
+        if (size == null)
+            size = CameraHelper.getOptimalPreviewSize(parameters.getSupportedPreviewSizes(), (int) Math.min(DensityUtils.getScreenWidth(), DensityUtils.getScreenWidth() / Constants.TARGET_RATIO));
         Log.d(TAG, "OptimalPreviewSize w: " + size.width + "---h: " + size.height);
         Constants.REAL_OUTPUT_RATIO = 1F * size.width / size.height;
         parameters.setPreviewSize(size.width, size.height);

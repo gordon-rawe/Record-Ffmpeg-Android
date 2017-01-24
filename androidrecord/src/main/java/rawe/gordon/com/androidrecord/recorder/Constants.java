@@ -4,6 +4,7 @@ import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H264;
 
 public class Constants {
 
+    public static final boolean USE_RECTANGLE = false;
     public static final float TARGET_RATIO = 4 / 3F;
     public static float REAL_OUTPUT_RATIO = 4 / 3F;
 

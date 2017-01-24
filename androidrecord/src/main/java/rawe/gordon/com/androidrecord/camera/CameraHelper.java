@@ -180,6 +180,24 @@ public class CameraHelper {
     }
 
     /**
+     * 获取最优预览尺寸
+     *
+     * @param sizes
+     * @return
+     */
+    public static Camera.Size getRectanglePreviewSize(List<Camera.Size> sizes) {
+        Camera.Size optimalSize = null;
+        for (Camera.Size size : sizes) {
+            double ratio = (double) size.width / size.height;
+            if (ratio == 1) {
+                optimalSize = size;
+                break;
+            }
+        }
+        return optimalSize;
+    }
+
+    /**
      * 获取相机录制CIF质量视频的宽高
      *
      * @param cameraId
