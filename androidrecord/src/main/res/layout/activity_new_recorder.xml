@@ -56,21 +56,14 @@
         </RelativeLayout>
     </LinearLayout>
 
-    <RelativeLayout
+    <rawe.gordon.com.androidrecord.widget.CameraPreviewView
+        android:id="@+id/camera_preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent" />
 
-        <rawe.gordon.com.androidrecord.widget.CameraPreviewView
-            android:id="@+id/camera_preview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentTop="true" />
-
-        <rawe.gordon.com.androidrecord.PressRecordView
-            android:id="@+id/press_record_view"
-            android:layout_width="match_parent"
-            android:layout_height="400dp"
-            android:layout_alignParentBottom="true" />
-    </RelativeLayout>
+    <rawe.gordon.com.androidrecord.PressRecordView
+        android:id="@+id/press_record_view"
+        android:layout_width="match_parent"
+        android:layout_height="400dp" />
 
 </LinearLayout>
