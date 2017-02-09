@@ -22,7 +22,7 @@ public class LivePushActivity extends Activity implements View.OnClickListener {
 
     private static final String TAG = LivePushActivity.class.getCanonicalName();
 
-    private String live_rtmp_url = "rtmp://10.32.64.130:1935/live/gordon";
+    private String live_rtmp_url = "rtmp://192.168.0.108:1935/live/gordon";
     //摄像机
     private Camera camera;
     //一个控件

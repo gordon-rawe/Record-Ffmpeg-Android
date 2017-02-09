@@ -1,5 +1,6 @@
 package rawe.gordon.com.androidrecord.recorder;
 
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_AAC;
 import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H264;
 
 public class Constants {
@@ -14,6 +15,7 @@ public class Constants {
     public final static String OUTPUT_VIDEO_EXTENSION = ".flv";
     public final static String OUTPUT_IMAGE_EXTENSION = ".jpg";
     public final static int VIDEO_CODEC = AV_CODEC_ID_H264;
+    public final static int AUDIO_CODEC = AV_CODEC_ID_AAC;
     public final static String OUTPUT_FORMAT = "flv";
     public final static String OUTPUT_FORMAT_OLD = "3gp";
     public static final int FRAME_RATE = 28;

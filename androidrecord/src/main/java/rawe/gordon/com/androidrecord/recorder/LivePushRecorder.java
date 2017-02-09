@@ -110,6 +110,8 @@ public class LivePushRecorder implements Camera.PreviewCallback, CameraPreviewVi
         } else {
             recorder.setFormat(Constants.OUTPUT_FORMAT_OLD);
         }
+
+        recorder.setAudioCodec(Constants.AUDIO_CODEC);
         recorder.setSampleRate(Constants.SAMPLE_AUDIO_RATE_IN_HZ);
         recorder.setVideoBitrate(Constants.VIDEO_BIT_RATE);
         recorder.setFrameRate(Constants.FRAME_RATE);
@@ -173,7 +175,7 @@ public class LivePushRecorder implements Camera.PreviewCallback, CameraPreviewVi
      * @return
      */
     public boolean startRecording() {
-        if(live_url==null) return false;
+        if (live_url == null) return false;
         boolean started = true;
         initRecorder();
         initFrameFilter();
