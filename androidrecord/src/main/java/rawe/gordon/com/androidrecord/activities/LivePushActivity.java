@@ -10,9 +10,7 @@ import android.widget.Toast;
 import rawe.gordon.com.androidrecord.PressRecordView;
 import rawe.gordon.com.androidrecord.R;
 import rawe.gordon.com.androidrecord.camera.CameraHelper;
-import rawe.gordon.com.androidrecord.recorder.Constants;
-import rawe.gordon.com.androidrecord.recorder.GordonVideoRecorder;
-import rawe.gordon.com.androidrecord.utils.FileUtil;
+import rawe.gordon.com.androidrecord.recorder.LivePushRecorder;
 import rawe.gordon.com.androidrecord.widget.CameraPreviewView;
 
 /**
@@ -20,13 +18,15 @@ import rawe.gordon.com.androidrecord.widget.CameraPreviewView;
  *
  * @author Gordon Rawe
  */
-public class NewRecordVideoActivity extends Activity implements View.OnClickListener {
+public class LivePushActivity extends Activity implements View.OnClickListener {
 
-    private static final String TAG = NewRecordVideoActivity.class.getCanonicalName();
+    private static final String TAG = LivePushActivity.class.getCanonicalName();
+
+    private String live_rtmp_url = "rtmp://10.32.64.130:1935/live/gordon";
     //摄像机
     private Camera camera;
     //一个控件
-    private GordonVideoRecorder mRecorder;
+    private LivePushRecorder mRecorder;
     //按钮控件
     private PressRecordView pressRecordView;
     //相机标号
@@ -47,7 +47,7 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
             return;
         }
         // 初始化录像机
-        setContentView(R.layout.activity_new_recorder);
+        setContentView(R.layout.activity_live_push);
         initCamera();
         pressRecordView = (PressRecordView) findViewById(R.id.press_record_view);
         back = findViewById(R.id.cancel_btn);
@@ -57,26 +57,16 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
         back.setOnClickListener(this);
         flash.setOnClickListener(this);
         switcher.setOnClickListener(this);
-        final Callback callback = new Callback() {
-            @Override
-            public void onSuccess(String path) {
-                Toast.makeText(NewRecordVideoActivity.this, path, Toast.LENGTH_SHORT).show();
-            }
 
-            @Override
-            public void onFail() {
-
-            }
-        };
         pressRecordView.setListener(new PressRecordView.StateChangeListener() {
             @Override
             public void onTimeOut() {
-                stopRecord(callback, true);
+                stopRecord();
             }
 
             @Override
             public void onCancel() {
-                stopRecord(callback, false);
+                stopRecord();
             }
 
             @Override
@@ -86,13 +76,13 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
 
             @Override
             public void onLessThanFive() {
-                stopRecord(callback, false);
+                stopRecord();
             }
         });
     }
 
     private void initCamera() {
-        mRecorder = new GordonVideoRecorder(Constants.MEDIA_FILE_DIR);
+        mRecorder = new LivePushRecorder(live_rtmp_url);
         CameraPreviewView preview = (CameraPreviewView) findViewById(R.id.camera_preview);
         preview.setCamera(camera, cameraId);
         mRecorder.setCameraPreviewView(preview);
@@ -101,13 +91,8 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
     private void switchCamera() {
         if (CameraHelper.getAvailableCamerasCount() < 2) return;
         if (mRecorder != null) {
-            boolean recording = mRecorder.isRecording();
             // 页面不可见就要停止录制
             mRecorder.stopRecording();
-            // 录制时退出，直接舍弃视频
-            if (recording) {
-                FileUtil.deleteFile(mRecorder.getFilePath());
-            }
         }
         // release the camera immediately on pause event
         releaseCamera();
@@ -124,13 +109,8 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
     protected void onPause() {
         super.onPause();
         if (mRecorder != null) {
-            boolean recording = mRecorder.isRecording();
             // 页面不可见就要停止录制
             mRecorder.stopRecording();
-            // 录制时退出，直接舍弃视频
-            if (recording) {
-                FileUtil.deleteFile(mRecorder.getFilePath());
-            }
         }
         // release the camera immediately on pause event
         releaseCamera();
@@ -167,8 +147,8 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
      * prepare work
      */
     private boolean prepareVideoRecorder() {
-        if (!FileUtil.isSDCardMounted()) {
-            Toast.makeText(this, "SD卡不可用", Toast.LENGTH_SHORT).show();
+        if (mRecorder.getLiveUrl() == null) {
+            Toast.makeText(this, " 视频上传路径不能为空", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
@@ -177,21 +157,8 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
     /**
      * stop recording
      */
-    private void stopRecord(Callback callback, boolean isValid) {
+    private void stopRecord() {
         mRecorder.stopRecording();
-        String videoPath = mRecorder.getFilePath();
-        // no video is recorded
-        if (null == videoPath) {
-            callback.onFail();
-            return;
-        }
-        // if canceled we delete it and call back the path if com.ctrip.gs.video.record.record finished
-        if (!isValid) {
-            FileUtil.deleteFile(videoPath);
-        } else {
-            // call back the required path.
-            callback.onSuccess(videoPath);
-        }
     }
 
     @Override
@@ -201,10 +168,6 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
                 boolean recording = mRecorder.isRecording();
                 // 页面不可见就要停止录制
                 mRecorder.stopRecording();
-                // 录制时退出，直接舍弃视频
-                if (recording) {
-                    FileUtil.deleteFile(mRecorder.getFilePath());
-                }
             }
             // release the camera immediately on pause event
             releaseCamera();
@@ -240,11 +203,5 @@ public class NewRecordVideoActivity extends Activity implements View.OnClickList
             return Camera.Parameters.FLASH_MODE_OFF;
         }
         return "";
-    }
-
-    private interface Callback {
-        void onSuccess(String path);
-
-        void onFail();
     }
 }

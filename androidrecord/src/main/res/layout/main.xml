@@ -13,7 +13,7 @@
         android:layout_centerVertical="true"
         android:padding="8dp"
         android:text="@string/app_name"
-        tools:context=".RecordActivity" />
+        tools:context=".abandon.RecordActivity" />
 
     <Button
         android:id="@+id/recorder_control"

@@ -20,20 +20,17 @@ import java.nio.ShortBuffer;
 
 import rawe.gordon.com.androidrecord.camera.CameraHelper;
 import rawe.gordon.com.androidrecord.utils.DensityUtils;
-import rawe.gordon.com.androidrecord.utils.FileUtil;
 import rawe.gordon.com.androidrecord.widget.CameraPreviewView;
 
 /**
  * Wechat look like video recorder
  */
-public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPreviewView.PreviewEventListener {
+public class LivePushRecorder implements Camera.PreviewCallback, CameraPreviewView.PreviewEventListener {
 
-    private static final String TAG = GordonVideoRecorder.class.getCanonicalName();
+    private static final String TAG = LivePushRecorder.class.getCanonicalName();
 
-    // specify the output folder
-    private final String mFolder;
-    // specify the output path
-    private String strFinalPath;
+    // specify the rtmp url
+    private String live_url;
     // specify the picture width and height
     private int imageWidth;
     private int imageHeight;
@@ -68,8 +65,8 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      */
     private String mFilters;
 
-    public GordonVideoRecorder(String folder) {
-        mFolder = folder;
+    public LivePushRecorder(String live_url) {
+        this.live_url = live_url;
     }
 
     public boolean isRecording() {
@@ -105,9 +102,8 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         Log.w(TAG, "init recorder");
         Log.i(TAG, "create yuvImage");
         yuvImage = new Frame(imageWidth, imageHeight, Frame.DEPTH_UBYTE, 2);
-        strFinalPath = FileUtil.createFilePath(mFolder, null, Long.toString(System.currentTimeMillis()));
         // 初始化时设置录像机的目标视频大小
-        recorder = new FFmpegFrameRecorder(strFinalPath, outputWidth, outputHeight, 1);
+        recorder = new FFmpegFrameRecorder(live_url, outputWidth, outputHeight, 1);
         if (Build.VERSION.SDK_INT > 10) {
             recorder.setFormat(Constants.OUTPUT_FORMAT);
             recorder.setVideoCodec(Constants.VIDEO_CODEC);
@@ -163,13 +159,12 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
         mFrameFilter = null;
     }
 
-    /**
-     * 获取视频文件路径
-     *
-     * @return
-     */
-    public String getFilePath() {
-        return strFinalPath;
+    public void setLiveUrl(String live_url) {
+        this.live_url = live_url;
+    }
+
+    public String getLiveUrl() {
+        return live_url;
     }
 
     /**
@@ -178,6 +173,7 @@ public class GordonVideoRecorder implements Camera.PreviewCallback, CameraPrevie
      * @return
      */
     public boolean startRecording() {
+        if(live_url==null) return false;
         boolean started = true;
         initRecorder();
         initFrameFilter();

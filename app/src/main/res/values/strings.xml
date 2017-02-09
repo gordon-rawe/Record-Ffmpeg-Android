@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Record-Ffmpeg-Android</string>
-    <string name="press_to_record_a_video">Press to record a video!</string>
+    <string name="press_to_record_a_video">Press to record a local video!</string>
+    <string name="press_to_record_a_live_video">Press to record a live video!</string>
 </resources>

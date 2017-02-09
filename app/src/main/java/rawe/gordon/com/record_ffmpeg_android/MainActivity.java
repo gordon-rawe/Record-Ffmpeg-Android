@@ -5,7 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import rawe.gordon.com.androidrecord.activities.NewRecordVideoActivity;
+import rawe.gordon.com.androidrecord.activities.LivePushActivity;
+import rawe.gordon.com.androidrecord.activities.LocalRecordActivity;
 
 public class MainActivity extends Activity {
 
@@ -13,10 +14,16 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findViewById(R.id.click).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.local_record).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, NewRecordVideoActivity.class));
+                startActivity(new Intent(MainActivity.this, LocalRecordActivity.class));
+            }
+        });
+        findViewById(R.id.live_push).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, LivePushActivity.class));
             }
         });
     }

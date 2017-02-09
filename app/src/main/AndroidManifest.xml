@@ -22,8 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="rawe.gordon.com.androidrecord.activities.NewRecordVideoActivity" />
-        <activity android:name="rawe.gordon.com.androidrecord.RecordActivity" />
+        <activity android:name="rawe.gordon.com.androidrecord.activities.LocalRecordActivity" />
+        <activity android:name="rawe.gordon.com.androidrecord.activities.LivePushActivity" />
     </application>
 
 </manifest>

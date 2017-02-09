@@ -1,4 +1,4 @@
-package rawe.gordon.com.androidrecord;
+package rawe.gordon.com.androidrecord.abandon;
 
 import android.app.Activity;
 import android.content.Context;
@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import rawe.gordon.com.androidrecord.R;
 import rawe.gordon.com.androidrecord.recorder.Constants;
 
 /**
