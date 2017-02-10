@@ -25,20 +25,4 @@
         android:paddingTop="10dp"
         android:text="@string/press_to_record_a_video" />
 
-    <Button
-        android:id="@+id/live_push"
-        android:shadowDy="0"
-        android:shadowDx="0"
-        android:shadowColor="@android:color/white"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/local_record"
-        android:background="#cccccc"
-        android:layout_marginTop="10dp"
-        android:paddingBottom="10dp"
-        android:paddingLeft="50dp"
-        android:paddingRight="50dp"
-        android:paddingTop="10dp"
-        android:text="@string/press_to_record_a_live_video" />
 </RelativeLayout>
